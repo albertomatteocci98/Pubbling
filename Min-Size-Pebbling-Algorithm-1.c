@@ -38,7 +38,7 @@ int countPaths(graph *G, int curr, int pre, bool visited[]) {
         int next = n->archiUscenti[i]; //in next viene salvato l'uscente
         if (!visited[next]) {
             total += countPaths(G, next, pre, visited); //se il nodo non è visitato, esploro il cammino ricorsivamente.
-            if (total >= 2) // se total è 2, quindi ho 2 cammini, mi fermo, altrimenti
+            if (total >= 2) // se total è 2, quindi ho 2 cammini, mi fermo.
                 return 2;
         }
     }
