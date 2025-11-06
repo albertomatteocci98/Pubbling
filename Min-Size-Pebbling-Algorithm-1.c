@@ -43,7 +43,7 @@ int countPaths(graph *G, int curr, int pre, bool visited[]) {
         }
     }
 
-    visited[curr] = false; // backtrack
+    visited[curr] = false;
     return total;
 }
 
