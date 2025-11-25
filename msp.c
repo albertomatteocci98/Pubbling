@@ -13,7 +13,7 @@ typedef struct
 {
     int num_nodes;
     node *nodes;
-    int **adj;
+    int *adj;
 } graph;
 
 // inizializzo la matrice di adiacenza.
@@ -21,10 +21,7 @@ void init_adj(graph *G)
 {
     for (int i = 0; i < G->num_nodes; i++)
     {
-        for (int j = 0; j < G->num_nodes; j++)
-        {
-            G->adj[i][j] = 0; // inizializzo tutte le celle a 0
-        }
+        G->adj[i] = 0; // inizializzo tutte le celle a 0
     }
 }
 
@@ -40,7 +37,7 @@ int count_paths(graph *G, int curr, int pre, bool visited[])
     for (int i = 0; i < G->num_nodes; i++)
     {
         int next = i; // in next viene salvato l'arco in posizione i
-        if (G->adj[curr][next] == 1 && !visited[next])
+        if (G->adj[curr * n + next] == 1 && !visited[next])
         {
             total += count_paths(G, next, pre, visited); // se il nodo non è visitato, esploro il cammino ricorsivamente.
             if (total >= 2)                              // se total è 2, quindi ho 2 cammini, mi fermo.
@@ -109,37 +106,163 @@ int *msp(graph *G, int *Pi, int pi_lenght, int *num_edges)
     return S;
 }
 
-int main()
+// toglie il newline finale, se presente
+void strip(char *s)
 {
-    graph G;
-    G.num_nodes = 5;
-    // alloco matrice di adiacenza
-    G.adj = malloc(sizeof(int *) * G.num_nodes);
-    for (int i = 0; i < G.num_nodes; i++)
-    {
-        G.adj[i] = malloc(sizeof(int) * G.num_nodes);
-    }
-    // 3. inizializzo la matrice
-    init_adj(&G);
-    // 4. imposto gli archi del grafo
-    G.adj[0][1] = 1;
-    G.adj[1][2] = 1;
-    G.adj[0][3] = 1;
-    G.adj[3][2] = 1;
+    int L = strlen(s);
+    if (L > 0 && (s[L - 1] == '\n' || s[L - 1] == '\r'))
+        s[L - 1] = '\0';
+}
 
-    // 5. creo un cammino
-    int Pi[] = {0, 1, 2};
-    int pi_len = 3;
-    int num_edges;
-    int *S = msp(&G, Pi, pi_len, &num_edges);
+// elimina l’ultimo carattere se è '+' o '-'
+// (serve per i nodi nel path)
+void strip_pm(char *s)
+{
+    int L = strlen(s);
+    if (L > 0 && (s[L - 1] == '+' || s[L - 1] == '-'))
+        s[L - 1] = '\0';
+}
 
-    // 6. stampo gli archi
-    for (int k = 0; k < num_edges; k++)
+int main(int argc, char **argv)
+{
+    if (argc < 2)
     {
-        printf("Arco %d: %d -> %d\n", k, S[2 * k], S[2 * k + 1]);
+        printf("Uso: %s file.gfa\n", argv[0]);
+        return 1;
     }
-    free(S);
-    for (int i = 0; i < G.num_nodes; i++)
-        free(G.adj[i]);
-    free(G.adj);
+
+    // apro il file GFA in lettura:
+    FILE *f = fopen(argv[1], "r");
+    if (!f)
+    {
+        printf("Errore apertura file\n");
+        return 1;
+    }
+
+    char line[4096];
+    int max_id = -1; // tiene traccia del nodo massimo visto nei S e nei L
+
+    // Scorro il file per capire quanti nodi esistono:
+
+    while (fgets(line, sizeof line, f))
+    {
+        strip(line); // rimuove newline
+        // se la riga è vuota, passo alla prossima:
+        if (line[0] == '\0')
+            continue;
+
+        char *type = strtok(line, "\t"); // estraggo il primo campo(S o L o P)
+        if (!type)
+            continue;
+
+        if (strcmp(type, "S") == 0)
+        {
+            // se la riga inizia con S:
+            char *id = strtok(NULL, "\t");
+            if (id)
+            {
+                int v = atoi(id); // converti l'id in numero
+                if (v > max_id)
+                    max_id = v;
+            }
+        }
+        else if (strcmp(type, "L") == 0)
+        {
+            // formato: L <from> <orient> <to> <orient>
+            char *from = strtok(NULL, "\t");
+            strtok(NULL, "\t"); // salta orientamento
+            char *to = strtok(NULL, "\t");
+
+            if (from)
+            {
+                int u = atoi(from);
+                if (u > max_id)
+                    max_id = u;
+            }
+            if (to)
+            {
+                int v = atoi(to);
+                if (v > max_id)
+                    max_id = v;
+            }
+        }
+    }
+
+    int N = max_id + 1; // numero totale nodi
+    printf("Nodi totali = %d\n", N);
+
+    // alloco una matrice di adiacenza NxN:
+    int *adj = calloc(N * N, sizeof(int));
+
+    int *Pi = NULL; // path "Pi" (array di nodi)
+    int pi_len = 0; // lunghezza del path
+
+    rewind(f); // ritorno ad inizio file
+
+    while (fgets(line, sizeof line, f))
+    {
+        strip(line);
+        char *type = strtok(line, "\t");
+        if (!type)
+            continue;
+        // se la riga è di tipo L, carico l'arco:
+        if (strcmp(type, "L") == 0)
+        {
+            // gestisce gli archi
+            char *from = strtok(NULL, "\t");
+            strtok(NULL, "\t"); // salta orient
+            char *to = strtok(NULL, "\t");
+
+            int u = atoi(from);
+            int v = atoi(to);
+
+            adj[u * N + v] = 1; // registriamo l’arco u -> v
+        }
+        // se la riga è di tipo P, leggo il path:
+        else if (strcmp(type, "P") == 0)
+        {
+            // gestisce il path
+            strtok(NULL, "\t");              // salto nome del path
+            char *list = strtok(NULL, "\t"); // lista id separati da virgole
+
+            // conto quanti nodi ci sono nella lista contando le virgole:
+            int count = 1;
+            for (char *p = list; *p; p++)
+                if (*p == ',')
+                    count++;
+
+            Pi = malloc(sizeof(int) * count); // alloco l'array del path
+
+            int k = 0;
+            char *elem = strtok(list, ","); // un id per volta
+            while (elem)
+            {
+                strip_pm(elem);           // rimuovo + o -
+                Pi[k++] = atoi(elem);     // converto in numero
+                elem = strtok(NULL, ","); // passo al prossimo id
+            }
+            pi_len = k;
+        }
+    }
+
+    fclose(f);
+
+    // stampo gli archi trovati:
+    printf("Archi trovati:\n");
+    for (int u = 0; u < N; u++)
+        for (int v = 0; v < N; v++)
+            if (adj[u * N + v])
+                printf("%d -> %d\n", u, v);
+    // stampo un cammino se esiste:
+    if (Pi)
+    {
+        printf("Path Pi: ");
+        for (int i = 0; i < pi_len; i++)
+            printf("%d ", Pi[i]);
+        printf("\n");
+        free(Pi);
+    }
+
+    free(adj);
+    return 0;
 }
