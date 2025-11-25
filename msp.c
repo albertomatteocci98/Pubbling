@@ -19,9 +19,10 @@ typedef struct
 // inizializzo la matrice di adiacenza.
 void init_adj(graph *G)
 {
-    for (int i = 0; i < G->num_nodes; i++)
+    int N = G->num_nodes;
+    for (int i = 0; i < N * N; i++)
     {
-        G->adj[i] = 0; // inizializzo tutte le celle a 0
+        G->adj[i] = 0;
     }
 }
 
@@ -169,7 +170,7 @@ int main(int argc, char **argv)
         else if (strcmp(type, "L") == 0)
         {
             char *from = strtok(NULL, "\t");
-            strtok(NULL, "\t"); 
+            strtok(NULL, "\t");
             char *to = strtok(NULL, "\t");
 
             if (from)
@@ -209,13 +210,13 @@ int main(int argc, char **argv)
         {
             // gestisce gli archi
             char *from = strtok(NULL, "\t");
-            strtok(NULL, "\t"); 
+            strtok(NULL, "\t");
             char *to = strtok(NULL, "\t");
 
             int u = atoi(from);
             int v = atoi(to);
 
-            adj[u * N + v] = 1; 
+            adj[u * N + v] = 1;
         }
         // se la riga è di tipo P, leggo il path:
         else if (strcmp(type, "P") == 0)
