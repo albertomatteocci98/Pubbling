@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 
     while (fgets(line, sizeof line, f))
     {
-        strip(line); // rimuove newline
+        strip(line); // rimuovo newline
         // se la riga è vuota, passo alla prossima:
         if (line[0] == '\0')
             continue;
@@ -168,9 +168,8 @@ int main(int argc, char **argv)
         }
         else if (strcmp(type, "L") == 0)
         {
-            // formato: L <from> <orient> <to> <orient>
             char *from = strtok(NULL, "\t");
-            strtok(NULL, "\t"); // salta orientamento
+            strtok(NULL, "\t"); 
             char *to = strtok(NULL, "\t");
 
             if (from)
@@ -210,13 +209,13 @@ int main(int argc, char **argv)
         {
             // gestisce gli archi
             char *from = strtok(NULL, "\t");
-            strtok(NULL, "\t"); // salta orient
+            strtok(NULL, "\t"); 
             char *to = strtok(NULL, "\t");
 
             int u = atoi(from);
             int v = atoi(to);
 
-            adj[u * N + v] = 1; // registriamo l’arco u -> v
+            adj[u * N + v] = 1; 
         }
         // se la riga è di tipo P, leggo il path:
         else if (strcmp(type, "P") == 0)
