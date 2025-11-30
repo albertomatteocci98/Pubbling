@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #define MAX_NODES 100
+#define MAX_PATHS 1024
 
 typedef struct
 {
@@ -19,8 +20,8 @@ typedef struct
 // inizializzo la matrice di adiacenza.
 void init_adj(graph *G)
 {
-    int N = G->num_nodes;
-    for (int i = 0; i < N * N; i++)
+    int n= G->num_nodes;
+    for (int i = 0; i < n* n; i++)
     {
         G->adj[i] = 0;
     }
@@ -60,7 +61,7 @@ bool hasmultp(graph *G, int curr, int pre)
     return (count >= 2);
 }
 
-int *msp(graph *G, int *Pi, int pi_lenght, int *num_edges)
+int *msp(graph *G, int *pi, int pi_lenght, int *num_edges)
 {
 
     int max_edges = pi_lenght - 1;
@@ -74,15 +75,15 @@ int *msp(graph *G, int *Pi, int pi_lenght, int *num_edges)
     }
 
     int s_index = 0; // numero di archi nella lista S
-    int pre = Pi[pi_lenght - 1];
+    int pre = pi[pi_lenght - 1];
 
     for (int j = pi_lenght - 2; j >= 0; j--)
     {
-        int curr = Pi[j];
+        int curr = pi[j];
         if (hasmultp(G, curr, pre))
         {
             S[2 * s_index] = curr;          // from
-            S[2 * s_index + 1] = Pi[j + 1]; // to
+            S[2 * s_index + 1] = pi[j + 1]; // to
             s_index++;
             pre = curr;
         }
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
                     max_id = v;
             }
         }
-        else if (strcmp(type, "L") == 0)
+       /* else if (strcmp(type, "L") == 0)
         {
             char *from = strtok(NULL, "\t");
             strtok(NULL, "\t");
@@ -185,17 +186,26 @@ int main(int argc, char **argv)
                 if (v > max_id)
                     max_id = v;
             }
-        }
+        }*/
     }
 
-    int N = max_id + 1; // numero totale nodi
-    printf("Nodi totali = %d\n", N);
+    int n= max_id + 1; // numero totale nodi, l'ID 0 è vuoto. riga 0 e colonna 0 rimangono vuote.
+    printf("Nodi totali = %d\n", n);
 
     // alloco una matrice di adiacenza NxN:
-    int *adj = calloc(N * N, sizeof(int));
+    int *adj = calloc(n* n, sizeof(int));
 
-    int *Pi = NULL; // path "Pi" (array di nodi)
+    int *pi = NULL; // path "pi" (array di nodi)
     int pi_len = 0; // lunghezza del path
+    //preparo i path da testare(che poi verranno stampati singolarmente nel for sotto):
+    int **all_paths = malloc(sizeof(int *) * MAX_PATHS);
+    int *all_lenghts = malloc(sizeof(int) * MAX_PATHS);
+    int path_count = 0;
+    if (!all_paths || !all_lenghts)
+    {
+        printf("Errore alloc Paths\n");
+        return 1;
+    }
 
     rewind(f); // ritorno ad inizio file
 
@@ -216,7 +226,7 @@ int main(int argc, char **argv)
             int u = atoi(from);
             int v = atoi(to);
 
-            adj[u * N + v] = 1;
+            adj[u * n+ v] = 1;
         }
         // se la riga è di tipo P, leggo il path:
         else if (strcmp(type, "P") == 0)
@@ -231,17 +241,20 @@ int main(int argc, char **argv)
                 if (*p == ',')
                     count++;
 
-            Pi = malloc(sizeof(int) * count); // alloco l'array del path
+            pi = malloc(sizeof(int) * count); // alloco l'array del path
 
             int k = 0;
             char *elem = strtok(list, ","); // un id per volta
             while (elem)
             {
                 strip_pm(elem);           // rimuovo + o -
-                Pi[k++] = atoi(elem);     // converto in numero
+                pi[k++] = atoi(elem);     // converto in numero
                 elem = strtok(NULL, ","); // passo al prossimo id
             }
             pi_len = k;
+            all_paths[path_count] = pi;    // salva il puntatore al path appena allocato
+            all_lenghts[path_count] = pi_len; // salvo la lunghezza
+            path_count++;                 // incrementa quanti path ho
         }
     }
 
@@ -249,19 +262,60 @@ int main(int argc, char **argv)
 
     // stampo gli archi trovati:
     printf("Archi trovati:\n");
-    for (int u = 0; u < N; u++)
-        for (int v = 0; v < N; v++)
-            if (adj[u * N + v])
+    for (int u = 0; u < n; u++)
+        for (int v = 0; v < n; v++)
+            if (adj[u * n+ v])
                 printf("%d -> %d\n", u, v);
-    // stampo un cammino se esiste:
-    if (Pi)
+    if (!all_paths || !all_lenghts)
     {
-        printf("Path Pi: ");
-        for (int i = 0; i < pi_len; i++)
-            printf("%d ", Pi[i]);
-        printf("\n");
-        free(Pi);
+        printf("Errore alloc Paths\n");
+        return 1;
     }
+
+    // Costruisco il graph G una volta usando n e adj già pronti
+    graph G = (graph){0};
+    G.num_nodes = n;
+    G.adj = adj;
+    G.nodes = calloc(n, sizeof(node));
+    if (!G.nodes)
+    {
+        printf("Errore allocazione G.nodes\n");
+        return 1;
+    }
+    for (int i = 0; i < n; i++)
+    {
+        G.nodes[i].id_node = i;
+        G.nodes[i].paths = NULL;
+    }
+
+    for (int p = 0; p < path_count; p++)
+    {
+        int *pi_curr = all_paths[p];
+        int len = all_lenghts[p];
+
+        // stampa del path p-esimo:
+        printf("Path #%d: ", p);
+        for (int i = 0; i < len; i++)
+            printf("%d ", pi_curr[i]);
+        printf("\n");
+
+        // chiamata della funzione msp per il path corrente:
+        int num_edges = 0;
+        int *S = msp(&G, pi_curr, len, &num_edges); 
+
+        printf("  MSP -> %d archi:\n", num_edges);
+        for (int e = 0; e < num_edges; e++)
+        {
+            printf("    %d -> %d\n", S[2 * e], S[2 * e + 1]);// stampo gli archi di S
+        }
+        free(S);
+    }
+    //libero la memoria:
+    for (int p = 0; p < path_count; p++)
+        free(all_paths[p]);
+    free(all_paths);
+    free(all_lenghts);
+    free(G.nodes);
 
     free(adj);
     return 0;
