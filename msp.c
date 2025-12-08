@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #define MAX_NODES 100
 #define MAX_PATHS 1024
 
@@ -20,8 +21,8 @@ typedef struct
 // inizializzo la matrice di adiacenza.
 void init_adj(graph *G)
 {
-    int n= G->num_nodes;
-    for (int i = 0; i < n* n; i++)
+    int n = G->num_nodes;
+    for (int i = 0; i < n * n; i++)
     {
         G->adj[i] = 0;
     }
@@ -29,6 +30,7 @@ void init_adj(graph *G)
 
 int count_paths(graph *G, int curr, int pre, bool visited[])
 {
+    int n = G->num_nodes;
     if (curr == pre)
         return 1; // CASO BASE: se il nodo corrente è quello di destinazione, ritorna 1
 
@@ -50,7 +52,6 @@ int count_paths(graph *G, int curr, int pre, bool visited[])
     visited[curr] = false;
     return total;
 }
-
 bool hasmultp(graph *G, int curr, int pre)
 {
     bool visited[G->num_nodes];
@@ -60,13 +61,33 @@ bool hasmultp(graph *G, int curr, int pre)
     int count = count_paths(G, curr, pre, visited);
     return (count >= 2);
 }
-
-int *msp(graph *G, int *pi, int pi_lenght, int *num_edges)
+int *compute_multipath_matrix(graph *G)
 {
+    int n = G->num_nodes;
+    int *matrix = calloc(n * n, sizeof(int)); // Calloc inizializza a 0
+    if (!matrix)
+        return NULL;
 
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (i == j)
+                continue; // Un nodo verso se stesso
+            if (hasmultp(G, i, j))
+            {
+                matrix[i * n + j] = 1;
+            }
+        }
+    }
+    return matrix;
+}
+
+int *msp(graph *G, int *pi, int pi_lenght, int *num_edges, int *mp_matrix)
+{
+    int n = G->num_nodes;
     int max_edges = pi_lenght - 1;
 
-    // Ogni arco occupa 2 int: (from, to)
     int *S = malloc(sizeof(int) * 2 * max_edges);
     if (S == NULL)
     {
@@ -74,37 +95,37 @@ int *msp(graph *G, int *pi, int pi_lenght, int *num_edges)
         return NULL;
     }
 
-    int s_index = 0; // numero di archi nella lista S
+    int s_index = 0;
     int pre = pi[pi_lenght - 1];
 
     for (int j = pi_lenght - 2; j >= 0; j--)
     {
         int curr = pi[j];
-        if (hasmultp(G, curr, pre))
+
+        if (mp_matrix[curr * n + pre] == 1)
         {
-            S[2 * s_index] = curr;          // from
-            S[2 * s_index + 1] = pi[j + 1]; // to
+            S[2 * s_index] = curr;
+            S[2 * s_index + 1] = pi[j + 1];
             s_index++;
             pre = curr;
         }
     }
 
+    // Inversione (swap) per ordine corretto
     for (int i = 0; i < s_index / 2; i++)
     {
         int left_from = S[2 * i];
         int left_to = S[2 * i + 1];
-
         int right_from = S[2 * (s_index - 1 - i)];
         int right_to = S[2 * (s_index - 1 - i) + 1];
 
-        // scambio arco i con arco s_index-1-i
         S[2 * i] = right_from;
         S[2 * i + 1] = right_to;
         S[2 * (s_index - 1 - i)] = left_from;
         S[2 * (s_index - 1 - i) + 1] = left_to;
     }
 
-    *num_edges = s_index; // numero di archi
+    *num_edges = s_index;
     return S;
 }
 
@@ -168,36 +189,36 @@ int main(int argc, char **argv)
                     max_id = v;
             }
         }
-       /* else if (strcmp(type, "L") == 0)
-        {
-            char *from = strtok(NULL, "\t");
-            strtok(NULL, "\t");
-            char *to = strtok(NULL, "\t");
+        /* else if (strcmp(type, "L") == 0)
+         {
+             char *from = strtok(NULL, "\t");
+             strtok(NULL, "\t");
+             char *to = strtok(NULL, "\t");
 
-            if (from)
-            {
-                int u = atoi(from);
-                if (u > max_id)
-                    max_id = u;
-            }
-            if (to)
-            {
-                int v = atoi(to);
-                if (v > max_id)
-                    max_id = v;
-            }
-        }*/
+             if (from)
+             {
+                 int u = atoi(from);
+                 if (u > max_id)
+                     max_id = u;
+             }
+             if (to)
+             {
+                 int v = atoi(to);
+                 if (v > max_id)
+                     max_id = v;
+             }
+         }*/
     }
 
-    int n= max_id + 1; // numero totale nodi, l'ID 0 è vuoto. riga 0 e colonna 0 rimangono vuote.
+    int n = max_id + 1; // numero totale nodi, l'ID 0 è vuoto. riga 0 e colonna 0 rimangono vuote.
     printf("Nodi totali = %d\n", n);
 
     // alloco una matrice di adiacenza NxN:
-    int *adj = calloc(n* n, sizeof(int));
+    int *adj = calloc(n * n, sizeof(int));
 
     int *pi = NULL; // path "pi" (array di nodi)
     int pi_len = 0; // lunghezza del path
-    //preparo i path da testare(che poi verranno stampati singolarmente nel for sotto):
+    // preparo i path da testare(che poi verranno stampati singolarmente nel for sotto):
     int **all_paths = malloc(sizeof(int *) * MAX_PATHS);
     int *all_lenghts = malloc(sizeof(int) * MAX_PATHS);
     int path_count = 0;
@@ -226,7 +247,7 @@ int main(int argc, char **argv)
             int u = atoi(from);
             int v = atoi(to);
 
-            adj[u * n+ v] = 1;
+            adj[u * n + v] = 1;
         }
         // se la riga è di tipo P, leggo il path:
         else if (strcmp(type, "P") == 0)
@@ -252,9 +273,9 @@ int main(int argc, char **argv)
                 elem = strtok(NULL, ","); // passo al prossimo id
             }
             pi_len = k;
-            all_paths[path_count] = pi;    // salva il puntatore al path appena allocato
+            all_paths[path_count] = pi;       // salva il puntatore al path appena allocato
             all_lenghts[path_count] = pi_len; // salvo la lunghezza
-            path_count++;                 // incrementa quanti path ho
+            path_count++;                     // incrementa quanti path ho
         }
     }
 
@@ -264,7 +285,7 @@ int main(int argc, char **argv)
     printf("Archi trovati:\n");
     for (int u = 0; u < n; u++)
         for (int v = 0; v < n; v++)
-            if (adj[u * n+ v])
+            if (adj[u * n + v])
                 printf("%d -> %d\n", u, v);
     if (!all_paths || !all_lenghts)
     {
@@ -288,6 +309,15 @@ int main(int argc, char **argv)
         G.nodes[i].paths = NULL;
     }
 
+    // Precalcolo la matrice prima di processare i path
+    printf("Calcolo matrice multipath (pre-elaborazione)...\n");
+    int *mp_matrix = compute_multipath_matrix(&G);
+    if (!mp_matrix)
+    {
+        printf("Errore allocazione matrice multipath\n");
+        return 1;
+    }
+
     for (int p = 0; p < path_count; p++)
     {
         int *pi_curr = all_paths[p];
@@ -301,16 +331,18 @@ int main(int argc, char **argv)
 
         // chiamata della funzione msp per il path corrente:
         int num_edges = 0;
-        int *S = msp(&G, pi_curr, len, &num_edges); 
+        int *S = msp(&G, pi_curr, len, &num_edges, mp_matrix);
 
         printf("  MSP -> %d archi:\n", num_edges);
         for (int e = 0; e < num_edges; e++)
         {
-            printf("    %d -> %d\n", S[2 * e], S[2 * e + 1]);// stampo gli archi di S
+            printf("    %d -> %d\n", S[2 * e], S[2 * e + 1]); // stampo gli archi di S
         }
         free(S);
     }
-    //libero la memoria:
+
+    // libero la memoria:
+    free(mp_matrix);
     for (int p = 0; p < path_count; p++)
         free(all_paths[p]);
     free(all_paths);
