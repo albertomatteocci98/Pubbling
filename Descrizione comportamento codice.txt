@@ -3,9 +3,9 @@ Analisi Passo-Passo dell'esecuzione di MSP sul Grafo
 
 Il seguente tracciamento descrive le operazioni logiche eseguite dalla funzione "msp" e dal main del programma, applicate al grafo di test:
 
-1. Fase di Pre-elaborazione (Nel `main`)
+1. Fase di Pre-elaborazione (Nel main)
 
-Prima di analizzare i singoli path, il programma esegue una volta sola il calcolo della Matrice di Raggiungibilità Multipla (mp_matrix).
+Prima di analizzare i singoli path, il programma esegue una volta sola il calcolo della Matrice mp_matrix.
 Questa matrice indica se due nodi sono collegati da diversi cammini.
 
 -Viene allocata una matrice.
@@ -17,11 +17,11 @@ Questa matrice indica se due nodi sono collegati da diversi cammini.
 
 2. Funzione MSP:
 
-Il programma ora analizza ogni path singolarmente. Prendiamo in esame il Path 2 (Verde) che contiene il "Salto Estremo" ().
+Il programma ora analizza ogni path singolarmente. Prendiamo in esame il Path 2 (Verde) che contiene il "Salto Estremo".
 
 Dati in Input alla funzione:
 
--pi`: Array del percorso 
+-pi: Array del percorso 
 -pi_lenght: 11 (lunghezza del path)
 -mp_matrix: La matrice calcolata al punto 1.
 
