@@ -42,7 +42,7 @@ int count_paths(graph *G, int curr, int pre, bool visited[])
 {
     int n = G->num_nodes;
     if (curr == pre)
-        return 1; // CASO BASE: se il nodo corrente è quello di destinazione, ritorna 1
+        return 1; 
 
     visited[curr] = true;
     int total = 0;
@@ -263,10 +263,8 @@ int main(int argc, char **argv)
         char *type = strtok(line, "\t");
         if (!type)
             continue;
-        // se la riga è di tipo L, carico l'arco:
         if (strcmp(type, "L") == 0)
         {
-            // gestisce gli archi
             char *from = strtok(NULL, "\t");
             strtok(NULL, "\t");
             char *to = strtok(NULL, "\t");
@@ -352,7 +350,7 @@ int main(int argc, char **argv)
         printf("  MSP -> %d archi:\n", num_edges);
         for (int e = 0; e < num_edges; e++)
         {
-            printf("    %d -> %d\n", S[2 * e], S[2 * e + 1]); // stampo gli archi di S
+            printf("    %d -> %d\n", S[2 * e], S[2 * e + 1]);
         }
         free(S);
     }
