@@ -28,23 +28,33 @@ void init_adj(graph *G)
     }
 }
 
+/**
+ count_paths:
+ -Funzione ricorsiva (DFS) che conta i percorsi distinti tra due nodi.
+ -La funzione interrompe la ricerca non appena il numero di percorsi trovati raggiunge o supera 2.
+ -G: Puntatore al grafo.
+ -curr: ID del nodo corrente nell'esplorazione.
+ -pre: ID del nodo destinazione (Target).
+ -visited: Array booleano per tenere traccia dei nodi visitati nel cammino corrente.
+ -return int: 0, 1 o 2 (dove 2 indica "2 o più percorsi").
+ */
 int count_paths(graph *G, int curr, int pre, bool visited[])
 {
     int n = G->num_nodes;
     if (curr == pre)
         return 1; // CASO BASE: se il nodo corrente è quello di destinazione, ritorna 1
 
-    visited[curr] = true; // setto visited[curr] a true in modo tale che so che il nodo corrente è stato attraversato.
+    visited[curr] = true;
     int total = 0;
 
-    // esploro tutti gli archi uscenti del nodo corrente
+
     for (int i = 0; i < G->num_nodes; i++)
     {
-        int next = i; // in next viene salvato l'arco in posizione i
+        int next = i; 
         if (G->adj[curr * n + next] == 1 && !visited[next])
         {
-            total += count_paths(G, next, pre, visited); // se il nodo non è visitato, esploro il cammino ricorsivamente.
-            if (total >= 2)                              // se total è 2, quindi ho 2 cammini, mi fermo.
+            total += count_paths(G, next, pre, visited); 
+            if (total >= 2)
                 return 2;
         }
     }
@@ -52,6 +62,17 @@ int count_paths(graph *G, int curr, int pre, bool visited[])
     visited[curr] = false;
     return total;
 }
+
+/**
+  hasmultp:
+ -funzione che verifica se esistono più cammini tra due nodi.
+ -Prepara l'array 'visited' e lancia la funzione ricorsiva count_paths.
+ -G: Puntatore al grafo.
+ -curr: Nodo di partenza (Sorgente).
+ -pre: Nodo di arrivo (Destinazione).
+ -return true: Se esistono almeno due percorsi distinti.
+ -return false: Se esiste un solo percorso o nessuno.
+ */
 bool hasmultp(graph *G, int curr, int pre)
 {
     bool visited[G->num_nodes];
@@ -61,10 +82,17 @@ bool hasmultp(graph *G, int curr, int pre)
     int count = count_paths(G, curr, pre, visited);
     return (count >= 2);
 }
+
+/**
+ -compute_multipath_matrix:
+ -Costruisce e popola la matrice quadrata mp_matrix (N x N).
+ -Itera su tutte le coppie di nodi (i, j) e imposta a 1 le celle corrispondenti a coppie collegate da 2 o più cammini
+ -G: Puntatore al grafo.
+ */
 int *compute_multipath_matrix(graph *G)
 {
     int n = G->num_nodes;
-    int *matrix = calloc(n * n, sizeof(int)); // Calloc inizializza a 0
+    int *matrix = calloc(n * n, sizeof(int));
     if (!matrix)
         return NULL;
 
@@ -73,7 +101,7 @@ int *compute_multipath_matrix(graph *G)
         for (int j = 0; j < n; j++)
         {
             if (i == j)
-                continue; // Un nodo verso se stesso
+                continue; 
             if (hasmultp(G, i, j))
             {
                 matrix[i * n + j] = 1;
@@ -83,6 +111,18 @@ int *compute_multipath_matrix(graph *G)
     return matrix;
 }
 
+/**
+ -MSP:
+ -1. Scorre il path dal fondo verso l'inizio.
+ -2. Consulta mp_matrix per trovare i punti di variazione (multipath).
+ -3. Mantiene solo gli archi necessari a descrivere come i nodi sono collegati tra loro, scartando i nodi ridondanti.
+ -G: Puntatore al grafo.
+ - pi: Array di interi rappresentante il percorso (sequenza di nodi).
+ - pi_lenght: Lunghezza del percorso.
+ - num_edges: Puntatore a intero dove verrà scritto il numero di archi trovati (Output).
+ - mp_matrix: La matrice di connettività calcolata in pre-elaborazione.
+ -int*: Array dinamico contenente le coppie di nodi (u, v) degli archi selezionati.
+ */
 int *msp(graph *G, int *pi, int pi_lenght, int *num_edges, int *mp_matrix)
 {
     int n = G->num_nodes;
@@ -129,7 +169,7 @@ int *msp(graph *G, int *pi, int pi_lenght, int *num_edges, int *mp_matrix)
     return S;
 }
 
-// toglie il newline finale, se presente
+// toglie il newline finale, se presente.
 void strip(char *s)
 {
     int L = strlen(s);
@@ -137,8 +177,10 @@ void strip(char *s)
         s[L - 1] = '\0';
 }
 
-// elimina l’ultimo carattere se è '+' o '-'
-// (serve per i nodi nel path)
+/**
+ -Rimuove i suffissi di orientamento ('+' o '-') dalle stringhe dei nodi GFA.
+ -Esempio: converte "13+" in "13" per permettere la conversione in intero (atoi).
+ */
 void strip_pm(char *s)
 {
     int L = strlen(s);
@@ -146,6 +188,14 @@ void strip_pm(char *s)
         s[L - 1] = '\0';
 }
 
+/**
+ -Funzione principale.
+ -1. Legge il file GFA.
+ -2. Costruisce la matrice di adiacenza e carica i Path.
+ -3. Esegue la pre-elaborazione (compute_multipath_matrix).
+ -4. Itera su tutti i percorsi caricati applicando l'algoritmo MSP.
+ -5. Stampa a video i risultati e libera la memoria.
+ */
 int main(int argc, char **argv)
 {
     if (argc < 2)
@@ -154,7 +204,6 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // apro il file GFA in lettura:
     FILE *f = fopen(argv[1], "r");
     if (!f)
     {
@@ -163,62 +212,40 @@ int main(int argc, char **argv)
     }
 
     char line[4096];
-    int max_id = -1; // tiene traccia del nodo massimo visto nei S e nei L
+    int max_id = -1;
 
-    // Scorro il file per capire quanti nodi esistono:
+
 
     while (fgets(line, sizeof line, f))
     {
-        strip(line); // rimuovo newline
-        // se la riga è vuota, passo alla prossima:
+        strip(line);
         if (line[0] == '\0')
             continue;
 
-        char *type = strtok(line, "\t"); // estraggo il primo campo(S o L o P)
+        char *type = strtok(line, "\t");
         if (!type)
             continue;
 
         if (strcmp(type, "S") == 0)
         {
-            // se la riga inizia con S:
             char *id = strtok(NULL, "\t");
             if (id)
             {
-                int v = atoi(id); // converti l'id in numero
+                int v = atoi(id);
                 if (v > max_id)
                     max_id = v;
             }
         }
-        /* else if (strcmp(type, "L") == 0)
-         {
-             char *from = strtok(NULL, "\t");
-             strtok(NULL, "\t");
-             char *to = strtok(NULL, "\t");
-
-             if (from)
-             {
-                 int u = atoi(from);
-                 if (u > max_id)
-                     max_id = u;
-             }
-             if (to)
-             {
-                 int v = atoi(to);
-                 if (v > max_id)
-                     max_id = v;
-             }
-         }*/
     }
 
-    int n = max_id + 1; // numero totale nodi, l'ID 0 è vuoto. riga 0 e colonna 0 rimangono vuote.
+    int n = max_id + 1;
     printf("Nodi totali = %d\n", n);
 
-    // alloco una matrice di adiacenza NxN:
+
     int *adj = calloc(n * n, sizeof(int));
 
-    int *pi = NULL; // path "pi" (array di nodi)
-    int pi_len = 0; // lunghezza del path
-    // preparo i path da testare(che poi verranno stampati singolarmente nel for sotto):
+    int *pi = NULL;
+    int pi_len = 0; 
     int **all_paths = malloc(sizeof(int *) * MAX_PATHS);
     int *all_lenghts = malloc(sizeof(int) * MAX_PATHS);
     int path_count = 0;
@@ -228,7 +255,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    rewind(f); // ritorno ad inizio file
+    rewind(f);
 
     while (fgets(line, sizeof line, f))
     {
@@ -249,39 +276,34 @@ int main(int argc, char **argv)
 
             adj[u * n + v] = 1;
         }
-        // se la riga è di tipo P, leggo il path:
         else if (strcmp(type, "P") == 0)
         {
-            // gestisce il path
-            strtok(NULL, "\t");              // salto nome del path
-            char *list = strtok(NULL, "\t"); // lista id separati da virgole
-
-            // conto quanti nodi ci sono nella lista contando le virgole:
+            strtok(NULL, "\t");
+            char *list = strtok(NULL, "\t");
             int count = 1;
             for (char *p = list; *p; p++)
                 if (*p == ',')
                     count++;
 
-            pi = malloc(sizeof(int) * count); // alloco l'array del path
+            pi = malloc(sizeof(int) * count);
 
             int k = 0;
-            char *elem = strtok(list, ","); // un id per volta
+            char *elem = strtok(list, ",");
             while (elem)
             {
-                strip_pm(elem);           // rimuovo + o -
-                pi[k++] = atoi(elem);     // converto in numero
-                elem = strtok(NULL, ","); // passo al prossimo id
+                strip_pm(elem);
+                pi[k++] = atoi(elem);
+                elem = strtok(NULL, ",");
             }
             pi_len = k;
-            all_paths[path_count] = pi;       // salva il puntatore al path appena allocato
-            all_lenghts[path_count] = pi_len; // salvo la lunghezza
-            path_count++;                     // incrementa quanti path ho
+            all_paths[path_count] = pi;
+            all_lenghts[path_count] = pi_len;
+            path_count++;
         }
     }
 
     fclose(f);
 
-    // stampo gli archi trovati:
     printf("Archi trovati:\n");
     for (int u = 0; u < n; u++)
         for (int v = 0; v < n; v++)
@@ -293,7 +315,6 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // Costruisco il graph G una volta usando n e adj già pronti
     graph G = (graph){0};
     G.num_nodes = n;
     G.adj = adj;
@@ -309,7 +330,6 @@ int main(int argc, char **argv)
         G.nodes[i].paths = NULL;
     }
 
-    // Precalcolo la matrice prima di processare i path
     printf("Calcolo matrice multipath (pre-elaborazione)...\n");
     int *mp_matrix = compute_multipath_matrix(&G);
     if (!mp_matrix)
@@ -322,14 +342,10 @@ int main(int argc, char **argv)
     {
         int *pi_curr = all_paths[p];
         int len = all_lenghts[p];
-
-        // stampa del path p-esimo:
         printf("Path #%d: ", p);
         for (int i = 0; i < len; i++)
             printf("%d ", pi_curr[i]);
         printf("\n");
-
-        // chiamata della funzione msp per il path corrente:
         int num_edges = 0;
         int *S = msp(&G, pi_curr, len, &num_edges, mp_matrix);
 
