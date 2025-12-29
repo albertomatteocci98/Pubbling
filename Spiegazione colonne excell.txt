@@ -1,8 +1,0 @@
-Nome Colonna	Significato (Da scrivere nella tesi)
-File	Il nome del gene o campione analizzato.
-Graph Nodes	Quanti nodi ha il grafo intero (la complessità della "mappa").
-Path ID	Quale variante specifica stiamo guardando (es. Path_0 è il primo filamento di DNA).
-Orig. Length	LUNGHEZZA ORIGINALE: Quanti nodi dovevi attraversare prima di usare il tuo algoritmo. (Es. 162 passi).
-MSP Edges	ARCHI MSP: Quanti salti/archi ha trovato il tuo algoritmo. (Es. 4 archi).
-MSP Nodes	NODI SELEZIONATI: È il numero di archi + 1. Sono i "sassolini" (pebbles) strutturali rimasti.
-Selected %	TASSO DI COMPRESSIONE: Questo è il numero magico. Ti dice: "Il percorso MSP è grande solo il X% di quello originale".
