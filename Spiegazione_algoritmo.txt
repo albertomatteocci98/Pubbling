@@ -1,0 +1,288 @@
+
+
+Simulazione dell'Algoritmo MSP su esempioDisegno.gfa:
+
+Il grafo è composto da 28 nodi e 5 percorsi (Paths). L'esecuzione si divide in due macro-fasi:
+
+FASE 1: Pre-elaborazione (Costruzione mp_matrix)
+In questa fase viene costruita la matrice "mp_matrix", mp_matrix[i][j]=1 se tra il nodo i e il nodo j esistono più cammini(>=2).
+
+Il programma alloca la matrice mp_matrix () e avvia due cicli annidati (i da 1 a 28, j da 1 a 28).
+
+
+Esecuzione Sequenziale (Esempi Significativi in ordine di i):
+
+1. Analisi Nodo 1 :
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[1][2] = 0 (Lineare).
+
+
+2. Analisi Nodo 2 :
+ L'algoritmo trova due percorsi:
+ -Cammino A(Alto) Total=1.
+ -Cammino B (Basso) Total=2.
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[2][5] = 1.
+
+
+3. Analisi Nodo 3 :
+ L'algoritmo trova due percorsi:
+ Cammino A (Verso il nodo 16) Total=1.
+ Cammino B (Verso il nodo 5) Total=2.
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[3][19] = 1.
+ 
+4. Analisi Nodo 4:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[4][5] = 0 (Lineare).
+ 
+ 6. Analisi Nodo 5:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[5][6] = 0 (Lineare).
+ 
+5. Analisi Nodo 6:
+  L'algoritmo trova due percorsi:
+ Cammino A: (verso il nodo 7) Total=1.
+ Cammino B: (verso il nodo 9) Total=2.
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[6][13] = 1.
+
+
+6. Analisi Nodo 7 :
+ C'è solo l'arco diretto. Non esistono alternative per andare dal nodo 7 al nodo 8.
+ Risultato: mp_matrix[7][8] = 0 (Lineare).
+ 
+7. Analisi Nodo 8:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[8][13] = 0 (Lineare).
+
+8. Analisi Nodo 9:
+  L'algoritmo trova:
+ Cammino A (verso il nodo 10): Total=1.
+ Cammino B (verso il nodo 13): Total=2
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[9][13] = 1.
+ 
+9. Analisi Nodo 10:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[10][11] = 0 (Lineare).
+
+10. Analisi Nodo 11:
+  L'algoritmo trova:
+ Cammino A (verso il nodo 12): Total=1.
+ Cammino B (verso il nodo 13): Total=2
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[11][19] = 1.
+ 
+11. Analisi Nodo 12:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[12][19] = 0 (Lineare).
+
+12. Analisi Nodo 13:
+  L'algoritmo trova:
+ Cammino A (verso il nodo 14): Total=1.
+ Cammino B (verso il nodo 25): Total=2
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[13][27] = 1.
+ 
+13. Analisi Nodo 14:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[14][15] = 0 (Lineare).
+
+14. Analisi Nodo 15:
+ Cammino A (verso il nodo 16): Total=1.
+ Cammino B (verso il nodo 17): Total=2.
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[15][18] = 1.
+ 
+15. Analisi Nodo 16:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[16][18] = 0 (Lineare).
+
+16. Analisi Nodo 17:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[17][18] = 0 (Lineare).
+ 
+17. Analisi Nodo 18:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[18][19] = 0 (Lineare).
+ 
+18. Analisi Nodo 19:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[19][20] = 0 (Lineare).
+
+19.1. Analisi Nodo 20:
+ Cammino A(verso il nodo 25): Total=1.
+ Cammino B(verso il nodo 21): Total=2.
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[20][27] = 1.
+ 
+19.2. Analisi Nodo 20:
+ Cammino A (verso il nodo 25): Total=1
+ Cammino B (verso il nodo 21): Total=2.
+ Cammino C (verso il nodo 26): Total=3.
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[20][27] = 1.
+ 
+20. Analisi Nodo 21:
+ Cammino A (verso il nodo 22): Total=1.
+ Cammino B (verso il nodo 23): Total=2.
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[21][24] = 1.
+
+21. Analisi Nodo 22:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[22][24] = 0 (Lineare).
+
+22. Analisi Nodo 23:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[23][24] = 0 (Lineare).
+
+23. Analisi Nodo 24:
+ Cammino A (verso il nodo 25): Total=1.
+ Cammino B (verso il nodo 26): Total=2.
+ Condizione if(total>=2) Vera.
+ La funzione hasmultp restituisce TRUE.
+ Risultato: mp_matrix[24][27] = 1.
+
+24. Analisi Nodo 25:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[25][27] = 0 (Lineare).
+
+25. Analisi Nodo 26:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[26][27] = 0 (Lineare).
+
+26. Analisi Nodo 27:
+ C'è solo l'arco diretto.
+ Risultato: mp_matrix[27][28] = 0 (Lineare).
+
+
+
+
+
+ FASE 2: Analisi dei Path (MSP)
+
+Il programma legge i path nell'ordine del file GFA e applica la funzione msp.
+
+ 1. Elaborazione Path_1_Red
+
+Input: 1, 2, 3, 5, 6, 7, 8, 13, 14, 15, 16, 18, 19, 20, 25, 27, 28
+Esecuzione:
+
+ pre inizia a 28. Scorre indietro.
+ Arrivo a 20: mp_matrix[20][25]=1.
+ Salva arco:  Aggiorna pre=20.
+
+
+ Arrivo a 15: mp_matrix[15][18]=1.
+ Salva arco:  Aggiorna pre=15.
+
+
+ Arrivo a 6: mp_matrix[6][13]=1.
+ Salva arco:  Aggiorna pre=6.
+
+
+ Arrivo a 2: mp_matrix[2][5]=1.
+ Salva arco: . Aggiorna pre=2.
+
+
+ Arrivo a 1: Lineare.
+ Swap Finale: Inverte l'ordine degli archi salvati.
+ Output P1: 2->5, 6->13, 15->18, 20->25.
+
+ 2. Elaborazione Path_2_Blue
+
+Input: 1, 2, 4, 5, 6, 9, 10, 11, 13, 14, 15, 17, 18, 19, 20, 21, 23, 24, 26, 27, 28
+Esecuzione:
+
+ pre inizia a 28.
+ Arrivo a 20: Controlla mp_matrix[20][27]=1 (salta tutto il giro 21...26).
+ Salva arco: . Aggiorna pre=20.
+
+
+ Arrivo a 15: Controlla mp_matrix[15][18]=1
+ Salva arco: . Aggiorna pre=15.
+
+
+ Arrivo a 6: Controlla mp_matrix[6][13]=1
+ Salva arco: . Aggiorna pre=6.
+
+
+ Arrivo a 2: Controlla mp_matrix[2][5]=1
+ Salva arco: . Aggiorna pre=2.
+
+
+ Swap Finale.
+ Output P2: 2->5, 6->13, 15->18, 20->27.
+
+ 3. Elaborazione Path_3_Green
+
+Esecuzione:
+
+  pre inizia a 28.
+
+  Arrivo a 24: Controlla mp_matrix[24][28]=1.   
+  Salva arco: 24->25. Aggiorna pre=24.
+
+  Arrivo a 21: Controlla mp_matrix[21][24]=1 .  
+  Salva arco: 21->22. Aggiorna pre=21.
+
+  Arrivo a 11: Controlla mp_matrix[11][21]=1.   
+  Salva arco: 11->12. Aggiorna pre=11.
+
+  Arrivo a 2: Controlla mp_matrix[2][11]=1.    
+  Salva arco: 2->3. Aggiorna pre=2.
+
+  Swap Finale.   Output P3: 2->3, 11->12, 21->22, 24->25.
+
+ 4. Elaborazione Path_4_Black
+
+Input: 1, 2, 3, 16, 18, 19, 20, 26, 27, 28
+Esecuzione:
+
+ pre inizia a 28.
+ Arrivo a 20: Controlla mp_matrix[20][27]=1
+ Salva arco: . Aggiorna pre=20.
+
+
+ Arrivo a 3:
+ Controlla mp_matrix[3][19]=1.
+ Salva arco.
+
+
+ Output P4: 2->5 (se rilevato), 3->19 (o simile), 20->27.
+
+ 5. Elaborazione Path_5_Purple
+
+Input: 1, 2, 4, 5, 6, 9, 13, 25, 27, 28
+Esecuzione:
+
+ pre inizia a 28.
+ Arrivo a 13:
+ Controlla mp_matrix[13][27]=1.
+ Salva arco: Aggiorna pre=13.
+
+
+ Arrivo a 6:
+ Controlla mp_matrix[6][13]=1
+ Salva arco: Aggiorna pre=6.
+
+
+ Arrivo a 2: Controlla mp_matrix[2][5]=1
+ Salva arco.
+
+
+ Swap Finale.
+ Output P5: 2->5, 6->13, 13->27.
+
