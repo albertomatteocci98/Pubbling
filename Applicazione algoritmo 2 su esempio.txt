@@ -1,0 +1,174 @@
+
+ DATI DI PARTENZA
+ Path Analizzato (): Path_1_Red
+ Lista Nodi Path (): [1, 2, 3, 5, 6, 7, 8, 13, 14, 15, 16, 18, 19, 20, 25, 27, 28]
+ Lista S (Output): []
+
+
+ SETTING INIZIALE:
+
+ pre (Target)  28
+ 28.paths  1 (Il target vale sempre 1)
+
+
+ ITERAZIONE 1: 
+
+Analisi Nodo 27
+
+ mid (vicini): {28}
+ count = 28.paths = 1
+ 27.paths = 1
+ Condizione (Riga 10): if 1 > 1 AND 27 in Path? -> FALSO.
+
+Analisi Nodo 26 (Blue) e 25 (Red)
+
+ Entrambi vanno a 27.
+ count = 27.paths = 1.
+ 26.paths  1
+ 25.paths  1
+ Condizione: if 1 > 1?  AND ... FALSO.
+
+Analisi Nodo 24
+
+ mid: {25, 26}
+ count = 25.paths (1) + 26.paths (1) = 2
+ 24.paths  2
+ Condizione (Riga 10): if 2 > 1 AND 24 in Path?
+ 2 > 1? VERO.
+ 24 in Path_Red? FALSO (Il path rosso salta dal 20 al 25).
+
+
+
+
+Analisi Nodo 20
+
+ mid: {21, 25, 26}
+ Calcolo Count (Riga 08):
+ Verso 21 (che porta a 24 che vale 2).
+ Verso 25 (25.paths=1).
+ Verso 26 (26.paths=1).
+ count =  2.
+
+
+ 20.paths  2
+ Condizione (Riga 10): if 2 > 1 AND 20 in Path? VERO, entrambe le condizioni sono soddisfatte.
+ 
+Cerco quale vicino salvare.
+ 21 in Path_Red? No.
+ 26 in Path_Red? No.
+ 25 in Path_Red? SÌ. -> Salvo (20, 25) in S.
+
+
+ Reset Target (Righe 14-15):
+ pre  20
+ 20.paths = 1
+
+
+ ITERAZIONE 2:(pre = 20)
+
+Analisi Nodo 19
+
+ mid: {20}
+ count = 20.paths = 1 
+ 19.paths = 1
+
+Analisi Nodi 18, 17, 16 hanno solo un nodo vicino, quindi la condizione non risulterà vera e nessun arco verrà salvato in S.
+
+Analisi Nodo 15 
+
+ mid: {16, 17}
+ Calcolo Count:
+ Verso 16 (16.paths=1): +1
+ Verso 17 (17.paths=1): +1
+ count = 2
+
+
+ 15.paths  2
+ Condizione (Riga 10): if 2 > 1 AND 15 in Path?
+ 2 > 1? VERO.
+ 15 in Path_Red? VERO.
+
+17 è rosso? No.
+16 è rosso? SÌ. -> salvo (15, 16) in S.
+
+
+ Reset Target:
+ pre  15
+ 15.paths  1
+
+
+ ITERAZIONE 3: (pre = 15)
+
+Analisi Nodo 14
+
+ 14.paths  1
+
+Analisi Nodo 13
+
+ mid: {14, 25}
+ Calcolo Count:
+ Verso 14: 14 <= 15? SÌ. Aggiungo 14.paths.
+ Verso 25: 25 <= 15? FALSO (il nodo 25 è dopo il nodo 15).
+ L'algoritmo ignora il salto perché va oltre pre.
+ count = 1.
+
+
+ 13.paths = 1
+ Condizione: if 1 > 1? -> FALSO.
+ 
+ I Nodi 12, 11, 10, 9, 8, 7 hanno solo un nodo vicino, quindi la condizione non risulterà vera e nessun arco verrà salvato in S.
+
+Analisi Nodo 6 
+
+ mid: {7, 9}
+ Calcolo Count:
+ Verso 7 
+ Verso 9 
+ count = 2.
+
+
+ 6.paths  2
+ Condizione: if 2 > 1 AND 6 in Path?VERO
+
+
+ Azione:
+9 è rosso? No.
+7 è rosso? SÌ. -> Salvo (6, 7) in S.
+
+
+ Reset Target:
+ pre = 6
+ 6.paths = 1
+
+
+ ITERAZIONE 4: (pre = 6)
+
+Analisi Nodo 3 
+
+ mid: {5, 16}
+ Calcolo Count ):
+ Verso 5: 5 <= 6? SÌ. Aggiungo 5.paths=1.
+ Verso 16: 16 <= 6? FALSO.
+
+
+ 3.paths  1.
+
+Analisi Nodo 2 
+
+ mid: {3, 4}
+ Calcolo Count:
+ Verso 3: Porta al 6. 
+ Verso 4: Porta al 6.
+ count = 2.
+
+ Condizione: if 2 > 1 AND 2 in Path?
+ VERO.
+
+ Azione:
+ Salvo arco rosso: salvo (2, 3) in S.
+
+ Reset Target: pre  2.
+
+ OUTPUT FINALE
+
+[(20, 25), (15, 16), (6, 7), (2, 3)]
