@@ -42,18 +42,17 @@ int count_paths(graph *G, int curr, int pre, bool visited[])
 {
     int n = G->num_nodes;
     if (curr == pre)
-        return 1; 
+        return 1;
 
     visited[curr] = true;
     int total = 0;
 
-
     for (int i = 0; i < G->num_nodes; i++)
     {
-        int next = i; 
+        int next = i;
         if (G->adj[curr * n + next] == 1 && !visited[next])
         {
-            total += count_paths(G, next, pre, visited); 
+            total += count_paths(G, next, pre, visited);
             if (total >= 2)
                 return 2;
         }
@@ -101,7 +100,7 @@ int *compute_multipath_matrix(graph *G)
         for (int j = 0; j < n; j++)
         {
             if (i == j)
-                continue; 
+                continue;
             if (hasmultp(G, i, j))
             {
                 matrix[i * n + j] = 1;
@@ -168,6 +167,112 @@ int *msp(graph *G, int *pi, int pi_lenght, int *num_edges, int *mp_matrix)
     *num_edges = s_index;
     return S;
 }
+// funzione che verrà usata per avere il minimo tra 2 e il numero di cammini.
+int min_val(int a, int b)
+{
+    return (a < b) ? a : b;
+}
+// funzione che verrà utilizzata per verificare se un nodo è presente nel percorso.
+bool is_in_path(int u, int *pi, int pi_len)
+{
+    for (int i = 0; i < pi_len; i++)
+    {
+        if (pi[i] == u)
+            return true;
+    }
+    return false;
+}
+
+/**
+ msp_2:
+ -1. Parte dall'ultimo nodo e torna indietro verso l'inizio.
+ -2. Non ha bisogno della matrice di prima: conta i percorsi mentre scorre i nodi.
+ -3. Capisce che c'è un bivio quando la somma delle strade dei vicini è maggiore di 1.
+ -4. Se trova un bivio sul percorso giusto, salva l'arco e riparte da lì come nuovo traguardo.
+ -G: Il grafo.
+ -pi: La lista dei nodi del percorso.
+ -pi_len: Lunghezza del percorso.
+ -num_edges: Variabile in cui scrivo quanti archi ho trovato alla fine.
+ -return: La lista degli archi salvati.
+ */
+int *msp_2(graph *G, int *pi, int pi_len, int *num_edges)
+{
+    int n = G->num_nodes;
+    int max_edges = pi_len > 0 ? pi_len : 1;
+
+    int *S = malloc(sizeof(int) * 2 * max_edges);
+    if (!S)
+    {
+        *num_edges = 0;
+        return NULL;
+    }
+    int s_index = 0;
+    int *node_paths = calloc(n, sizeof(int));
+    if (!node_paths)
+    {
+        free(S);
+        return NULL;
+    }
+    int pre = pi[pi_len - 1];
+    node_paths[pre] = 1;
+
+    for (int curr = n - 1; curr >= 0; curr--)
+    {
+        if (curr == pre)
+            continue;
+        int count = 0;
+        for (int mid = 0; mid < n; mid++)
+        {
+            if (G->adj[curr * n + mid] == 1)
+            {
+                if (mid <= pre)
+                {
+                    count = min_val(2, count + node_paths[mid]);
+                }
+            }
+        }
+
+        node_paths[curr] = count;
+
+        if (node_paths[curr] > 1 && is_in_path(curr, pi, pi_len))
+        {
+            bool saved = false;
+            for (int mid = 0; mid < n; mid++)
+            {
+                if (G->adj[curr * n + mid] == 1)
+                {
+                    if (is_in_path(mid, pi, pi_len))
+                    {
+                        S[2 * s_index] = curr;
+                        S[2 * s_index + 1] = mid;
+                        s_index++;
+                        saved = true;
+                        break;
+                    }
+                }
+            }
+            if (saved)
+            {
+                pre = curr;
+                node_paths[pre] = 1;
+            }
+        }
+    }
+    // 16. Inversione S
+    for (int i = 0; i < s_index / 2; i++)
+    {
+        int t1 = S[2 * i];
+        int t2 = S[2 * i + 1];
+        S[2 * i] = S[2 * (s_index - 1 - i)];
+        S[2 * i + 1] = S[2 * (s_index - 1 - i) + 1];
+        S[2 * (s_index - 1 - i)] = t1;
+        S[2 * (s_index - 1 - i) + 1] = t2;
+    }
+
+    *num_edges = s_index;
+    free(node_paths);
+    return S;
+}
 
 // toglie il newline finale, se presente.
 void strip(char *s)
@@ -214,8 +319,6 @@ int main(int argc, char **argv)
     char line[4096];
     int max_id = -1;
 
-
-
     while (fgets(line, sizeof line, f))
     {
         strip(line);
@@ -241,11 +344,10 @@ int main(int argc, char **argv)
     int n = max_id + 1;
     printf("Nodi totali = %d\n", n);
 
-
     int *adj = calloc(n * n, sizeof(int));
 
     int *pi = NULL;
-    int pi_len = 0; 
+    int pi_len = 0;
     int **all_paths = malloc(sizeof(int *) * MAX_PATHS);
     int *all_lenghts = malloc(sizeof(int) * MAX_PATHS);
     int path_count = 0;
@@ -344,6 +446,8 @@ int main(int argc, char **argv)
         for (int i = 0; i < len; i++)
             printf("%d ", pi_curr[i]);
         printf("\n");
+
+        // CHIAMATA MSP 1
         int num_edges = 0;
         int *S = msp(&G, pi_curr, len, &num_edges, mp_matrix);
 
@@ -353,6 +457,17 @@ int main(int argc, char **argv)
             printf("    %d -> %d\n", S[2 * e], S[2 * e + 1]);
         }
         free(S);
+
+        // CHIAMATA MSP 2
+        int num_edges2 = 0;
+        int *S2 = msp_2(&G, pi_curr, len, &num_edges2);
+
+        printf("  [MSP 2] -> %d archi:\n", num_edges2);
+        for (int e = 0; e < num_edges2; e++)
+        {
+            printf("    %d -> %d\n", S2[2 * e], S2[2 * e + 1]);
+        }
+        free(S2);
     }
 
     // libero la memoria:
