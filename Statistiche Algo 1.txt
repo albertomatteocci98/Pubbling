@@ -1,0 +1,126 @@
+Tempi di esecuzione file GFA e Numero di pebble per path:
+ B-3106      
+      loop(senza ottimizzazione), 0.145s(con ottimizzazione)
+      Path_0: 149 pebble
+      Path_1: 0 pebble
+      Path_2: 151 pebble
+      Path_3: 151 pebble
+      Path_4: 151 pebble
+      Path_5: 151 pebble
+      Path_6: 150 pebble
+      Path_7: 151 pebble
+      Path_8: 151 pebble
+
+C-3107.gfa
+      loop(senza ottimizzazione), 0.160s(con ottimizzazione)
+      Path_0: 163 pebble
+      Path_1: 0 pebble
+      Path_2: 164 pebble
+      Path_3: 164 pebble
+      Path_4: 163 pebble
+      Path_5: 163 pebble
+      Path_6: 163 pebble
+      Path_7: 164 pebble
+      Path_8: 164 pebble
+      Path_9: 164 pebble
+
+DMA-3108:
+      4.415s(senza ottimizzazione),  0.017s (con ottimizzazione)
+      Path_0: 12 pebble
+      Path_1: 0 pebble
+      Path_2: 12 pebble
+      Path_3: 12 pebble
+      Path_4: 12 pebble
+      Path_5: 12 pebble
+      Path_6: 12 pebble
+      Path_7: 12 pebble
+      Path_8: 12 pebble
+      Path_9: 12 pebble
+      Path_10: 12 pebble
+
+DRB-3127:
+      8.674s(senza ottimizzazione), 0.058s (con ottimizzazione)
+      Path_0: 0 pebble
+      Path_1: 0 pebble
+      Path_2: 0 pebble
+
+E-3133: 0.427s(senza ottimizzazione), 0.014s(con ottimizzazione)
+Path_0: 5 pebble
+      Path_1: 5 pebble
+      Path_2: 5 pebble
+      Path_3: 5 pebble
+      Path_4: 5 pebble
+      Path_5: 5 pebble
+      Path_6: 5 pebble
+      Path_7: 5 pebble
+      Path_8: 5 pebble
+
+esempioDisegno:
+      0.014s(senza ottimizzazione), 0.011 (con ottimizzazione)
+      Path_0: 5 pebble
+      Path_1: 6 pebble
+      Path_2: 5 pebble
+      Path_3: 3 pebble
+      Path_4: 4 pebble
+
+MICA-100507436.gfa:
+      loop(senza ottimizzazione), 0.063s(con ottimizzazione) 
+      Path_0: 153 pebble
+      Path_1: 135 pebble
+      Path_2: 153 pebble
+      Path_3: 153 pebble
+      Path_4: 135 pebble
+      Path_5: 153 pebble
+      Path_6: 153 pebble
+      Path_7: 153 pebble
+
+TAP1-6890:
+      88.179s(senza ottimizzazione), 0.034s(con ottimizzazione)
+      Path_0: 13 pebble
+      Path_1: 0 pebble
+      Path_2: 13 pebble
+      Path_3: 13 pebble
+      Path_4: 13 pebble
+      Path_5: 13 pebble
+      Path_6: 13 pebble
+      Path_7: 13 pebble
+      Path_8: 13 pebble
+      Path_9: 13 pebble
+      Path_10: 13 pebble
+
+TAP2-6891 Totale: loop(senza ottimizzazione), 0.325s(con ottimizzazione) 
+      Path_0: 0 pebble
+      Path_1: 0 pebble
+      Path_2: 92 pebble
+      Path_3: 0 pebble
+      Path_4: 0 pebble
+      Path_5: 0 pebble
+      Path_6: 0 pebble
+      Path_7: 0 pebble
+      Path_8: 0 pebble
+      Path_9: 0 pebble
+      Path_10: 0 pebble
+
+V-352962:5.939s(senza ottimizzazione), 0.011(con ottimizzazione)
+      Path_0: 18 pebble
+      Path_1: 18 pebble
+      Path_2: 18 pebble
+      Path_3: 18 pebble
+      Path_4: 18 pebble
+      Path_5: 18 pebble
+      Path_6: 18 pebble
+      Path_7: 18 pebble
+      Path_8: 18 pebble
+      Path_9: 18 pebble
+
+DOB-3112:361.656S(senza ottimizzazione), 0.018(con ottimizzazione)
+      Path_0: 18 pebble
+      Path_1: 0 pebble
+      Path_2: 18 pebble
+      Path_3: 0 pebble
+      Path_4: 18 pebble
+      Path_5: 18 pebble
+      Path_6: 18 pebble
+      Path_7: 18 pebble
+      Path_8: 18 pebble
+      Path_9: 18 pebble
