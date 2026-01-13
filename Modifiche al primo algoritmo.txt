@@ -1,0 +1,21 @@
+
+Ottimizzazione delle Prestazioni dell'Algoritmo 1(MSP):
+
+
+Risoluzione delle criticità prestazionali (loop) riscontrate durante l'elaborazione di grafi SPOA:
+
+
+-Problema: La pre-elaborazione calcolava la raggiungibilità per tutte le coppie di nodi all'avvio, sprecando risorse su coppie non rilevanti.
+Soluzione: La matrice mp_matrix viene ora inizializzata interamente a -1. Il calcolo effettivo della funzione hasmultp avviene  all'interno della funzione msp solo quando una 
+specifica coppia viene visitata. Il risultato viene salvato e riutilizzato per i path successivi.
+
+
+ 
+ -Problema: La funzione ricorsiva hasmultp ricalcolava milioni di volte gli stessi sotto-percorsi in presenza di bivi che poi si riuniscono.
+ Soluzione: È stato introdotto un array di supporto memo (inizializzato a -1) passato alla funzione ricorsiva count_paths.
+ Funzionamento: Prima di esplorare un nodo, l'algoritmo verifica memo[curr].
+ Se memo[curr] != -1: restituisce il valore precedentemente calcolato.
+ Se memo[curr] == -1: esegue il calcolo e lo salva in memo[curr].
+
+
+
