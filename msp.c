@@ -32,15 +32,18 @@ void init_adj(graph *G)
  count_paths:
  -Funzione ricorsiva (DFS) che conta i percorsi distinti tra due nodi.
  -La funzione interrompe la ricerca non appena il numero di percorsi trovati raggiunge o supera 2.
+ -Dopodichè salva "total" nell'array memo, ovvero 0(vicolo cieco),1(strada unica) o 2(più strade)
  -G: Puntatore al grafo.
  -curr: ID del nodo corrente nell'esplorazione.
  -pre: ID del nodo destinazione (Target).
  -visited: Array booleano per tenere traccia dei nodi visitati nel cammino corrente.
  -return int: 0, 1 o 2 (dove 2 indica "2 o più percorsi").
  */
-int count_paths(graph *G, int curr, int pre, bool visited[])
+int count_paths(graph *G, int curr, int pre, bool visited[], int *memo)
 {
-    int n = G->num_nodes;
+    if (memo[curr] != -1)
+        return memo[curr];
+
     if (curr == pre)
         return 1;
 
@@ -49,22 +52,28 @@ int count_paths(graph *G, int curr, int pre, bool visited[])
 
     for (int i = 0; i < G->num_nodes; i++)
     {
+        if (total >= 2)
+            break;
+
         int next = i;
-        if (G->adj[curr * n + next] == 1 && !visited[next])
+        if (G->adj[curr * G->num_nodes + next] == 1 && !visited[next])
         {
-            total += count_paths(G, next, pre, visited);
-            if (total >= 2)
-                return 2;
+            total += count_paths(G, next, pre, visited, memo);
         }
     }
 
     visited[curr] = false;
+    if (total > 2)
+        total = 2;
+    memo[curr] = total;
+
     return total;
 }
 
 /**
   hasmultp:
  -funzione che verifica se esistono più cammini tra due nodi.
+ -alloca l'array 'memo' grande quando il numero di nodi e salva al suo intern tutti -1.
  -Prepara l'array 'visited' e lancia la funzione ricorsiva count_paths.
  -G: Puntatore al grafo.
  -curr: Nodo di partenza (Sorgente).
@@ -74,38 +83,39 @@ int count_paths(graph *G, int curr, int pre, bool visited[])
  */
 bool hasmultp(graph *G, int curr, int pre)
 {
-    bool visited[G->num_nodes];
-    for (int i = 0; i < G->num_nodes; i++)
-        visited[i] = false;
+    int n = G->num_nodes;
+    bool *visited = malloc(n * sizeof(bool));
+    int *memo = malloc(n * sizeof(int));
 
-    int count = count_paths(G, curr, pre, visited);
+    for (int i = 0; i < n; i++)
+    {
+        visited[i] = false;
+        memo[i] = -1;
+    }
+
+    int count = count_paths(G, curr, pre, visited, memo);
+
+    free(visited);
+    free(memo);
     return (count >= 2);
 }
 
 /**
  -compute_multipath_matrix:
  -Costruisce e popola la matrice quadrata mp_matrix (N x N).
- -Itera su tutte le coppie di nodi (i, j) e imposta a 1 le celle corrispondenti a coppie collegate da 2 o più cammini
+ -Itera su tutte le coppie di nodi (i, j) e imposta a -1 le celle.
  -G: Puntatore al grafo.
  */
 int *compute_multipath_matrix(graph *G)
 {
     int n = G->num_nodes;
-    int *matrix = calloc(n * n, sizeof(int));
+    int *matrix = malloc(n * n * sizeof(int));
     if (!matrix)
         return NULL;
 
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n * n; i++)
     {
-        for (int j = 0; j < n; j++)
-        {
-            if (i == j)
-                continue;
-            if (hasmultp(G, i, j))
-            {
-                matrix[i * n + j] = 1;
-            }
-        }
+        matrix[i] = -1;
     }
     return matrix;
 }
@@ -115,6 +125,7 @@ int *compute_multipath_matrix(graph *G)
  -1. Scorre il path dal fondo verso l'inizio.
  -2. Consulta mp_matrix per trovare i punti di variazione (multipath).
  -3. Mantiene solo gli archi necessari a descrivere come i nodi sono collegati tra loro, scartando i nodi ridondanti.
+ -4. Se nella matrice è presente -1, allora invoca hasmultp per verificare se esistono cammini multipli tra i nodi.
  -G: Puntatore al grafo.
  - pi: Array di interi rappresentante il percorso (sequenza di nodi).
  - pi_lenght: Lunghezza del percorso.
@@ -140,8 +151,19 @@ int *msp(graph *G, int *pi, int pi_lenght, int *num_edges, int *mp_matrix)
     for (int j = pi_lenght - 2; j >= 0; j--)
     {
         int curr = pi[j];
-
-        if (mp_matrix[curr * n + pre] == 1)
+        int idx = curr * n + pre;
+        if (mp_matrix[idx] == -1)
+        {
+            if (hasmultp(G, curr, pre))
+            {
+                mp_matrix[idx] = 1;
+            }
+            else
+            {
+                mp_matrix[idx] = 0;
+            }
+        }
+        if (mp_matrix[idx] == 1)
         {
             S[2 * s_index] = curr;
             S[2 * s_index + 1] = pi[j + 1];
@@ -150,18 +172,14 @@ int *msp(graph *G, int *pi, int pi_lenght, int *num_edges, int *mp_matrix)
         }
     }
 
-    // Inversione (swap) per ordine corretto
     for (int i = 0; i < s_index / 2; i++)
     {
-        int left_from = S[2 * i];
-        int left_to = S[2 * i + 1];
-        int right_from = S[2 * (s_index - 1 - i)];
-        int right_to = S[2 * (s_index - 1 - i) + 1];
-
-        S[2 * i] = right_from;
-        S[2 * i + 1] = right_to;
-        S[2 * (s_index - 1 - i)] = left_from;
-        S[2 * (s_index - 1 - i) + 1] = left_to;
+        int t1 = S[2 * i];
+        int t2 = S[2 * i + 1];
+        S[2 * i] = S[2 * (s_index - 1 - i)];
+        S[2 * i + 1] = S[2 * (s_index - 1 - i) + 1];
+        S[2 * (s_index - 1 - i)] = t1;
+        S[2 * (s_index - 1 - i) + 1] = t2;
     }
 
     *num_edges = s_index;
@@ -215,12 +233,15 @@ int *msp_2(graph *G, int *pi, int pi_len, int *num_edges)
     }
     int pre = pi[pi_len - 1];
     node_paths[pre] = 1;
-
     for (int curr = n - 1; curr >= 0; curr--)
     {
         if (curr == pre)
             continue;
         int count = 0;
+        // mid prende uno ad uno ogni nodo, nell'if ci si chiede se esiste un arco tra il mid attuale e curr, se si altro if
+        // e poi si calcola count(0+1=1), ora mi chiedo "ma se tipo al nodo 24 ho due nodi vicini?" dopo che mid è 25, il for scorre
+        // in avanti e mid diventa 26, nell'if troveremo che anche 26 è collegato a 24, quindi count(che è attualmente=1) diventerà
+        // min tra 2 e 1+(numero nodi verso cui va 26, ovvero 1)=2
         for (int mid = 0; mid < n; mid++)
         {
             if (G->adj[curr * n + mid] == 1)
@@ -467,7 +488,19 @@ int main(int argc, char **argv)
         {
             printf("    %d -> %d\n", S2[2 * e], S2[2 * e + 1]);
         }
+		if (num_edges2 > 0) {
+            printf("Selected Nodes: ");
+            for (int e = 0; e < num_edges2; e++) {
+                printf("%d ", S2[2 * e]);
+            }
+            // Stampa la destinazione dell'ultimo arco per chiudere il percorso
+            printf("%d", S2[2 * (num_edges2 - 1) + 1]);
+            printf("\n"); 
+        } else {
+            // Caso 0 archi 
+            printf("Selected Nodes: \n");
         free(S2);
+		  }
     }
 
     // libero la memoria:
