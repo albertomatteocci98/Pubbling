@@ -114,7 +114,7 @@ def main():
         except Exception as e:
             print(f"Errore su {filename}: {e}")
 
-    print("\nFinito. Controlla la cartella DATA.")
+    print("\nFinito.")
 
 if __name__ == "__main__":
     main()
